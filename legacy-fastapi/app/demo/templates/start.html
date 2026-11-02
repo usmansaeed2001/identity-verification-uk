@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Start a check · Driver verification demo{% endblock %}
+{% block content %}
+<section class="intro">
+  <p class="eyebrow">Host simulator</p>
+  <h1>Start a driver check</h1>
+  <p class="muted">This page stands in for your platform. It calls the verification API with a signed request, then hands the driver over to the check.</p>
+</section>
+
+{% if error %}
+<div class="alert alert-bad" role="alert">
+  <strong>The API refused the request.</strong>
+  <span>{{ error.message }}</span>
+  {% if error.fields %}<ul>{% for field, msg in error.fields.items() %}<li><code>{{ field }}</code>: {{ msg }}</li>{% endfor %}</ul>{% endif %}
+</div>
+{% endif %}
+
+<form method="post" action="/demo/start" class="stack-lg" id="start-form">
+  <fieldset class="card stack">
+    <legend>Driver details</legend>
+    <p class="hint">What the host already knows about the driver.</p>
+    <div class="grid-2">
+      <label class="field">
+        <span>First name</span>
+        <input id="first_name" name="first_name" value="{{ values.first_name }}" required autocomplete="off">
+      </label>
+      <label class="field">
+        <span>Last name</span>
+        <input id="last_name" name="last_name" value="{{ values.last_name }}" required autocomplete="off">
+      </label>
+    </div>
+    <label class="field">
+      <span>Date of birth</span>
+      <input id="dob" name="dob" type="date" value="{{ values.dob }}" required>
+    </label>
+  </fieldset>
+
+  <fieldset class="card stack">
+    <legend>How they prove their right to work</legend>
+    <div class="choice-list">
+      <label class="choice">
+        <input type="radio" id="route-share" name="route" value="share_code" {% if values.route == "share_code" %}checked{% endif %}>
+        <span><strong>Share code</strong><small>eVisa or other immigration status. Checked with the Home Office.</small></span>
+      </label>
+      <label class="choice">
+        <input type="radio" id="route-british" name="route" value="british_irish" {% if values.route == "british_irish" %}checked{% endif %}>
+        <span><strong>British or Irish passport</strong><small>No share code. Passport checked by a certified identity provider.</small></span>
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset class="card stack">
+    <legend>Mode</legend>
+    <div class="segmented" role="radiogroup" aria-label="Mode">
+      <input type="radio" id="mode-mock" name="mode" value="mock" checked>
+      <label for="mode-mock">Mock</label>
+      <input type="radio" id="mode-live" name="mode" value="live" {% if not live_available %}disabled{% endif %}>
+      <label for="mode-live">Real{% if not live_available %} <small>· No provider configured</small>{% elif live_sandbox %} <small>· Check Share Code sandbox</small>{% endif %}</label>
+    </div>
+    <p class="hint" data-mode-hint="mock">Mock mode never checks real documents. The result comes from the scenario you pick below.</p>
+    <p class="hint" data-mode-hint="live" hidden>Real mode checks the driver's share code and DVLA check code on gov.uk{% if live_sandbox %} (sandbox: test codes only, nothing reaches gov.uk){% endif %}. Selfie and document checks aren't switched on yet, so a reviewer compares the driver with the Home Office photo. Share code route only.</p>
+
+    <label class="field" data-mock-only>
+      <span>Test scenario</span>
+      <select id="scenario" name="scenario">
+        {% for s in scenarios %}
+        <option value="{{ s.key }}" data-routes="{{ s.routes|join(',') }}" {% if s.key == values.scenario %}selected{% endif %}>{{ s.label }} → {{ s.expected }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <ul class="scenario-notes" id="scenario-notes" data-mock-only>
+      {% for s in scenarios %}<li data-key="{{ s.key }}" {% if s.key != values.scenario %}hidden{% endif %}>{{ s.description }}</li>{% endfor %}
+    </ul>
+  </fieldset>
+
+  <button class="button" type="submit">Start verification</button>
+</form>
+{% endblock %}

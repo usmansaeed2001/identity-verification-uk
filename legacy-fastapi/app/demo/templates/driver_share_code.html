@@ -1,0 +1,34 @@
+{% extends "driver_base.html" %}
+{% block step %}
+<p>Get a share code from GOV.UK at <strong>Prove your right to work to an employer</strong>. It starts with W and lasts 90 days.</p>
+
+<label class="field {% if errors.share_code %}has-error{% endif %}">
+  <span>Share code</span>
+  <input id="share_code" name="share_code" class="mono code-input" value="{{ values.share_code or '' }}"
+         placeholder="W12 3AB C45" maxlength="11" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text" required>
+</label>
+{% if errors.share_code %}<p class="error">{{ errors.share_code }}</p>{% endif %}
+
+<label class="field {% if errors.dob %}has-error{% endif %}">
+  <span>Date of birth</span>
+  <input id="share_dob" name="dob" type="date" required>
+</label>
+{% if errors.dob %}<p class="error">{{ errors.dob }}</p>{% endif %}
+
+{% if sandbox %}
+<div class="hint-box">
+  <p><strong>Sandbox test codes</strong> (any date of birth)</p>
+  <ul>
+    <li><code>AA1AA1AA1</code> has the right to work, time-limited</li>
+    <li><code>BB2BB2BB2</code> doesn't have the right to work</li>
+    <li><code>CC3CC3CC3</code> no record found, so you're asked for a new code</li>
+    <li>Any other code: indefinite leave to remain</li>
+  </ul>
+</div>
+{% elif real %}
+<p class="hint">We'll check this code with the Home Office as soon as you continue. It takes about 20 seconds.</p>
+{% else %}
+<p class="hint">Demo only: the format is checked, but the code isn't sent to the Home Office.</p>
+{% endif %}
+<button class="button" type="submit">Continue</button>
+{% endblock %}

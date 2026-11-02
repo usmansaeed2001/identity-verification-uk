@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Driver check{% endblock %}
+{% block main_class %}page phone{% endblock %}
+{% block content %}
+{% if not real %}
+<div class="vendor-banner">Simulated vendor screen. In production the vendor's own app shows this step.</div>
+{% elif sandbox %}
+<div class="vendor-banner">Sandbox: these checks run against Check Share Code's test service, not gov.uk. Use the test codes shown below.</div>
+{% else %}
+<div class="vendor-banner vendor-banner-live">Real check: your codes are checked on gov.uk with the Home Office and DVLA.</div>
+{% endif %}
+{% if step_number %}
+<div class="progress" aria-label="Step {{ step_number }} of {{ step_count }}">
+  <div class="progress-bar"><span style="width: {{ (step_number / step_count * 100)|round }}%"></span></div>
+  <p class="eyebrow">Step {{ step_number }} of {{ step_count }}</p>
+</div>
+{% endif %}
+<h1>{{ title }}</h1>
+<form method="post" class="stack-lg">
+  {% block step %}{% endblock %}
+</form>
+{% endblock %}

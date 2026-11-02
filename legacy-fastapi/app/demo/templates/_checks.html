@@ -1,0 +1,13 @@
+<ul class="checklist">
+  {% for check in checks %}
+  <li class="check-row status-{{ check.status }}">
+    <span class="dot" aria-hidden="true"></span>
+    <div class="check-text">
+      <span class="check-name">{{ CHECK_LABELS[check.type] }}</span>
+      <span class="check-status">{{ check.status }}</span>
+      {% for reason in check.reasons %}<p class="reason">{{ reason }}</p>{% endfor %}
+      {% if show_facts %}{% for fact in check_facts(check) %}<p class="fact">{{ fact }}</p>{% endfor %}{% endif %}
+    </div>
+  </li>
+  {% endfor %}
+</ul>

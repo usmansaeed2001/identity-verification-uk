@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}{{ case.driver.full_name }} · Case{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="/demo/admin">Cases</a> / <span class="mono">{{ case.id|string|truncate(13, true, "…") }}</span></p>
+{% include "_admin_panel.html" %}
+{% endblock %}

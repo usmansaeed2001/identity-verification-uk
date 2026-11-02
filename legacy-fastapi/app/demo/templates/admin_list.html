@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Cases · Driver verification demo{% endblock %}
+{% block content %}
+<section class="intro">
+  <p class="eyebrow">Admin</p>
+  <h1>Recent checks</h1>
+  <p class="muted">The 50 most recent verifications. Test cases are deleted automatically after 24 hours.</p>
+</section>
+
+{% if not cases %}
+<div class="card empty">
+  <p>No checks yet.</p>
+  <a class="button" href="/demo">Start a driver check</a>
+</div>
+{% else %}
+<ul class="case-list">
+  {% for case in cases %}
+  <li>
+    <a class="case-row" href="/demo/admin/cases/{{ case.id }}">
+      <span class="case-main">
+        <strong>{{ case.driver.full_name }}</strong>
+        <small>{{ case.driver.external_driver_id }} · {{ "Share code" if case.route == "share_code" else "British/Irish passport" }}{% if case.mock_scenario %} · {{ scenarios[case.mock_scenario].label }}{% endif %}</small>
+        <small class="muted">{{ case.created_at|dt }}</small>
+      </span>
+      <span class="pill pill-{{ case.status|lower }}">{{ case.status }}</span>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

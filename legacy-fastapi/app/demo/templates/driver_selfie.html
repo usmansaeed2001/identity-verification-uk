@@ -1,0 +1,16 @@
+{% extends "driver_base.html" %}
+{% block step %}
+<p>Hold your phone at eye level and look straight at the camera. Take off glasses or anything covering your face.</p>
+<p class="muted">The real check also asks you to move your head, to prove you're a live person and not a photo.</p>
+
+<label class="capture capture-round">
+  <input type="file" id="selfie-photo" accept="image/*" capture="user" required data-preview="selfie-preview">
+  <span class="capture-target">
+    <img id="selfie-preview" alt="" hidden>
+    <span class="capture-label">Take selfie</span>
+  </span>
+</label>
+<p class="hint">Demo only: the photo stays on this device and isn't uploaded.</p>
+
+<button class="button" type="submit">Continue</button>
+{% endblock %}

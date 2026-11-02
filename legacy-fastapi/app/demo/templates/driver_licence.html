@@ -1,0 +1,41 @@
+{% extends "driver_base.html" %}
+{% block step %}
+<p>Enter the licence number from section 5 of your photocard. It has 16 characters.</p>
+
+<label class="field {% if errors.licence_number %}has-error{% endif %}">
+  <span>Driving licence number</span>
+  <input id="licence_number" name="licence_number" class="mono code-input" value="{{ values.licence_number or '' }}"
+         maxlength="18" autocomplete="off" autocapitalize="characters" spellcheck="false" required>
+</label>
+{% if errors.licence_number %}<p class="error">{{ errors.licence_number }}</p>{% endif %}
+
+{% if real %}
+<p>Then make a check code at GOV.UK <strong>View or share your driving licence information</strong> (gov.uk/view-driving-licence). You'll need your National Insurance number and the postcode on your licence. The code lasts 21 days and works once.</p>
+<label class="field {% if errors.check_code %}has-error{% endif %}">
+  <span>DVLA check code</span>
+  <input id="check_code" name="check_code" class="mono check-code-input" value="{{ values.check_code or '' }}"
+         placeholder="Hb Rh fp 7g" maxlength="11" autocomplete="off" autocapitalize="off" spellcheck="false" required>
+</label>
+<p class="hint">Copy the capitals and small letters exactly: the code is case-sensitive.</p>
+{% if errors.check_code %}<p class="error">{{ errors.check_code }}</p>{% endif %}
+{% if sandbox %}
+<div class="hint-box">
+  <p><strong>Sandbox test codes</strong> (the first 4 characters pick the result; each code works once, so change the last 4)</p>
+  <ul>
+    <li><code>AAAA1234</code> a clean licence</li>
+    <li><code>CCCC1234</code> 6 penalty points</li>
+    <li><code>DDDD1234</code> DVLA refuses the code, so you're asked for a new one</li>
+  </ul>
+  <p>Sandbox licences are car licences (category B), so the HGV check fails them. That's expected: a real HGV driver's code passes with a live key.</p>
+</div>
+{% endif %}
+{% endif %}
+
+<label class="checkbox {% if errors.dvla_consent %}has-error{% endif %}">
+  <input type="checkbox" id="dvla_consent" name="dvla_consent" value="yes" required>
+  <span>I agree to a check of my driving record with the DVLA, including the vehicles I can drive and any penalty points.</span>
+</label>
+{% if errors.dvla_consent %}<p class="error">{{ errors.dvla_consent }}</p>{% endif %}
+
+<button class="button" type="submit">Submit and start checks</button>
+{% endblock %}

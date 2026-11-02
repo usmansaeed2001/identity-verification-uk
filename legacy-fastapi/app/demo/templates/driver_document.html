@@ -1,0 +1,19 @@
+{% extends "driver_base.html" %}
+{% block step %}
+{% if is_passport %}
+<p>Take a photo of the page in your passport with your photo on it. Make sure all four corners are in the picture.</p>
+{% else %}
+<p>Take a photo of the front of your photocard driving licence. Avoid glare and make sure all four corners are in the picture.</p>
+{% endif %}
+
+<label class="capture">
+  <input type="file" id="document-photo" accept="image/*" capture="environment" required data-preview="document-preview">
+  <span class="capture-target">
+    <img id="document-preview" alt="" hidden>
+    <span class="capture-label">{% if is_passport %}Photograph passport photo page{% else %}Photograph licence front{% endif %}</span>
+  </span>
+</label>
+<p class="hint">Demo only: the photo stays on this device and isn't uploaded.</p>
+
+<button class="button" type="submit">Continue</button>
+{% endblock %}

@@ -1,0 +1,115 @@
+<div id="admin-panel" class="stack-lg"
+  {% if live %}hx-get="/demo/admin/cases/{{ case.id }}/panel" hx-trigger="every 2s [document.activeElement?.id !== 'review-note']" hx-swap="outerHTML"{% endif %}>
+
+  <section class="case-head">
+    <div class="stack-sm">
+      <h1>{{ case.driver.full_name }}</h1>
+      <p class="muted">
+        {{ case.driver.external_driver_id }} · Born {{ case.driver.dob|d }} ·
+        {{ "Share code route" if case.route == "share_code" else "British/Irish passport route" }}
+      </p>
+      {% if scenario %}<p class="muted">Scenario: <strong>{{ scenario.label }}</strong> (expected {{ scenario.expected }})</p>{% endif %}
+    </div>
+    <span class="pill pill-{{ case.status|lower }} pill-lg">{{ case.status }}</span>
+  </section>
+
+  {% if case.status == "MANUAL_REVIEW" %}
+  <section class="card stack review-card">
+    <h2>Review this case</h2>
+    <p class="muted">Check the reasons and evidence below, then approve or reject. The host gets a <code>verification.completed</code> webhook with your decision.</p>
+    {% if photo %}
+    <div class="photo-compare">
+      <img class="ho-photo" src="/demo/admin/cases/{{ case.id }}/evidence/{{ photo.id }}" alt="Photo held by the Home Office">
+      <p class="muted">Photo held by the Home Office. Compare it with the driver in person or on a video call before approving, and say how you checked in the note.</p>
+    </div>
+    {% endif %}
+    <form method="post" action="/demo/admin/cases/{{ case.id }}/review" class="stack" hx-boost="true">
+      <label class="field {% if review_error %}has-error{% endif %}">
+        <span>Note for the audit trail</span>
+        <textarea id="review-note" name="note" rows="3" required minlength="3" placeholder="e.g. Middle name confirmed from the passport photo page.">{{ review_note or "" }}</textarea>
+      </label>
+      {% if review_error %}<p class="error">{{ review_error }}</p>{% endif %}
+      <input type="hidden" name="reviewed_by" value="Demo reviewer">
+      <div class="actions">
+        <button class="button button-ok" type="submit" name="decision" value="approve">Approve</button>
+        <button class="button button-bad" type="submit" name="decision" value="reject">Reject</button>
+      </div>
+    </form>
+  </section>
+  {% endif %}
+
+  {% if case.review_decision %}
+  <section class="card stack-sm">
+    <h2>Review</h2>
+    <p><strong>{{ "Approved" if case.review_decision == "approve" else "Rejected" }}</strong> by {{ case.reviewed_by }} · {{ case.reviewed_at|dt }}</p>
+    <p class="muted">{{ case.review_note }}</p>
+  </section>
+  {% endif %}
+
+  <section class="stack">
+    <h2>Checks</h2>
+    {% set show_facts = true %}
+    {% include "_checks.html" %}
+  </section>
+
+  <section class="stack">
+    <h2>Evidence</h2>
+    {% if evidence %}
+    <ul class="plain-list">
+      {% for item in evidence %}
+      <li>
+        <a href="/demo/admin/cases/{{ case.id }}/evidence/{{ item.id }}" target="_blank" rel="noopener">
+          {{ EVIDENCE_LABELS.get(item.kind, item.kind) }} ({{ "photo" if item.content_type.startswith("image/") else "PDF" }}, {{ (item.size_bytes / 1024)|round(1) }} KB)
+        </a>
+        <small class="muted">{% if case.rtw_provider == "mock_rtw" %}Simulated document{% elif case.is_test %}Sandbox document{% else %}From gov.uk{% endif %} · {% if item.retain_until %}deleted after {{ item.retain_until|dt }}{% else %}kept until employment ends{% endif %}</small>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">No evidence yet. It arrives with the vendor's result.</p>
+    {% endif %}
+  </section>
+
+  <section class="stack">
+    <h2>Webhooks sent to the host</h2>
+    {% if webhooks %}
+    <ul class="plain-list">
+      {% for hook in webhooks %}
+      <li>
+        <details class="webhook">
+          <summary>
+            <code>{{ hook.event }}</code>
+            {% if hook.delivered_at %}
+              <span class="pill pill-passed">Delivered · signature verified</span>
+            {% elif hook.last_status_code %}
+              <span class="pill pill-failed">HTTP {{ hook.last_status_code }} · retrying</span>
+            {% else %}
+              <span class="pill">Sending</span>
+            {% endif %}
+            <small class="muted">attempt {{ hook.attempts }}</small>
+          </summary>
+          <pre>{{ hook.payload|tojson(indent=2) }}</pre>
+        </details>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">Nothing sent yet. The host hears back once the case is decided.</p>
+    {% endif %}
+  </section>
+
+  <section class="stack">
+    <h2>Audit trail</h2>
+    <ol class="timeline">
+      {% for event in events %}
+      <li>
+        <span class="time mono">{{ event.created_at.strftime("%H:%M:%S") }}</span>
+        <div>
+          <code>{{ event.action }}</code> <small class="muted">by {{ event.actor }}</small>
+          {% if event.detail %}<pre class="detail">{{ event.detail|tojson }}</pre>{% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+</div>

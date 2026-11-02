@@ -1,0 +1,33 @@
+{% extends "driver_base.html" %}
+{% block step %}
+{% if real %}
+<p>We need to check two things before you can drive for us.</p>
+<ul class="bullets">
+  <li><strong>Your right to work in the UK</strong>, using a share code from the Home Office</li>
+  <li><strong>Your HGV licence</strong>, using a check code from DVLA</li>
+</ul>
+<p class="muted">Your codes and date of birth are sent to gov.uk through our checking partner, Check Share Code. We keep the Home Office and DVLA results as our record of the check.</p>
+<p class="muted">Before you're cleared, someone will compare you with the photo the Home Office holds, in person or by video call.</p>
+
+<label class="checkbox {% if errors.agree %}has-error{% endif %}">
+  <input type="checkbox" id="agree" name="agree" value="yes" required>
+  <span>I agree to these checks of my right to work and driving licence.</span>
+</label>
+{% else %}
+<p>We need to check three things before you can drive for us.</p>
+<ul class="bullets">
+  <li><strong>Your right to work in the UK</strong>{% if is_passport %}, using your passport{% else %}, using your Home Office share code{% endif %}</li>
+  <li><strong>That you're the person on your {% if is_passport %}passport{% else %}driving licence{% endif %}</strong>, using a selfie</li>
+  <li><strong>Your HGV licence</strong>, with the DVLA</li>
+</ul>
+<p class="muted">Your selfie is biometric data. It's used only to match your face to your document photo, and then deleted.</p>
+
+<label class="checkbox {% if errors.agree %}has-error{% endif %}">
+  <input type="checkbox" id="agree" name="agree" value="yes" required>
+  <span>I agree to share a photo of my ID document and a selfie for these checks.</span>
+</label>
+{% endif %}
+{% if errors.agree %}<p class="error">{{ errors.agree }}</p>{% endif %}
+
+<button class="button" type="submit">Continue</button>
+{% endblock %}

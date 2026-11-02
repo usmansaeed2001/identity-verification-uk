@@ -1,0 +1,39 @@
+<div id="driver-status" class="stack-lg"
+  {% if not decided %}hx-get="/demo/driver/{{ case.id }}/status" hx-trigger="every 2s" hx-swap="outerHTML"{% endif %}>
+  {% if decided %}
+    {% set outcome = OUTCOMES[case.status] %}
+    <div class="outcome outcome-{{ case.status|lower }}" role="status">
+      <p class="eyebrow">Result</p>
+      <h1>{{ outcome[0] }}</h1>
+      <p>{{ outcome[1] }}</p>
+      <code class="status-code">{{ case.status }}</code>
+    </div>
+  {% elif actions %}
+    <div class="outcome outcome-manual_review" role="alert">
+      <p class="eyebrow">We need something from you</p>
+      <h1>Check your details</h1>
+      {% for action in actions %}
+      <div class="stack-sm">
+        <p>{{ action.message }}</p>
+        <a class="button" href="/demo/driver/{{ case.id }}/{{ action.step }}">{{ "Enter a new share code" if action.step == "share-code" else "Enter a new check code" }}</a>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="outcome outcome-pending" role="status" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      <h1>Checking your details</h1>
+      <p>{% if real %}We're checking with the Home Office and DVLA. This usually takes under a minute.{% else %}This usually takes a few seconds.{% endif %} You can keep this page open.</p>
+    </div>
+  {% endif %}
+
+  {% set show_facts = false %}
+  {% include "_checks.html" %}
+
+  {% if decided %}
+  <div class="actions">
+    <a class="button" href="/demo/admin/cases/{{ case.id }}">See what the host received</a>
+    <a class="button button-quiet" href="/demo">Start another check</a>
+  </div>
+  {% endif %}
+</div>

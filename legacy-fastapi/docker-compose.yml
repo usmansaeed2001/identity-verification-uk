@@ -1,0 +1,68 @@
+# Local stack: API + arq worker + Postgres + Redis.
+# Evidence files are encrypted and kept on a shared volume (EVIDENCE_BACKEND=local).
+# Point EVIDENCE_BACKEND=s3 at a real bucket in deployed environments.
+x-app: &app
+  build: .
+  env_file:
+    - path: .env
+      required: false
+  environment: &app-env
+    ENVIRONMENT: ${ENVIRONMENT:-development}
+    DATABASE_URL: postgresql+asyncpg://driver:driver@postgres:5432/driver_verification
+    JOB_BACKEND: arq
+    REDIS_URL: redis://redis:6379/0
+    INTERNAL_BASE_URL: http://api:8000
+    PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8000}
+    EVIDENCE_BACKEND: local
+    EVIDENCE_DIR: /data/evidence
+  volumes:
+    - evidence:/data/evidence
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+
+services:
+  api:
+    <<: *app
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  worker:
+    <<: *app
+    command: ["arq", "app.workers.arq_worker.WorkerSettings"]
+    depends_on:
+      api:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: driver
+      POSTGRES_PASSWORD: driver
+      POSTGRES_DB: driver_verification
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U driver -d driver_verification"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  postgres:
+  evidence:
